@@ -1,1 +1,3 @@
-from time import time as get_time
+import time
+
+def get_time(): return int(time.time())
