@@ -18,10 +18,16 @@ def configure_app(application):
     
     TRAP_BAD_REQUEST_ERRORS = True,
     
-    SERVER_NAME = "pharmacy.kgugeler.ca"
+    SERVER_NAME = "pharmacy.kgugeler.ca",
+    
+    MAIL_SERVER = keys["MAIL_SERVER"],
+    MAIL_USE_TLS = True,
+    MAIL_PORT = 587,
+    MAIL_USERNAME = keys['MAIL_USERNAME'],
+    MAIL_PASSWORD = keys['MAIL_PASSWORD'],
+    DEFAULT_MAIL_SENDER = tuple(keys['MAIL_SENDER'])
   )
   
-  for k, v in app_config.items():
-    application.config[k] = v
+  application.config.update(app_config)
     
   return application

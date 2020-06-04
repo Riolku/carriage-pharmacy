@@ -19,23 +19,22 @@ def resolve_user():
   
   user_manager.user = None
   
-  try:
-    user = session.get("user")
-    
-    if user is None: return
-    
-    uid = user.get("id")
-    
-    if uid is None: return
-    
-    u = Users.query.filter_by(id = int(uid)).first()
-    
-    if u is None: return
-    
-    if u:
-      if user['time'] + 60 * 60 * 24 < get_time():
-        user_manager.user = u
-        
+  user = session.get("user")
+
+  if user is None: return
+
+  uid = user.get("id")
+
+  if uid is None: return
+
+  u = Users.query.filter_by(id = int(uid)).first()
+
+  if u is None: return
+
+  if u:
+    if user['time'] + 60 * 60 * 24 < get_time():
+      user_manager.user = u
+
 
 def login_user(u):
   user_manager.user = u
