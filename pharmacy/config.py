@@ -23,10 +23,10 @@ def configure_app(application):
     
     MAIL_SERVER = keys["MAIL_SERVER"],
     MAIL_USE_TLS = True,
-    MAIL_PORT = 587,
-    MAIL_USERNAME = keys['MAIL_USERNAME'],
-    MAIL_PASSWORD = keys['MAIL_PASSWORD'],
-    DEFAULT_MAIL_SENDER = tuple(keys['MAIL_SENDER'])
+    MAIL_PORT = keys['MAIL_PORT'],
+    MAIL_USERNAME = keys.get('MAIL_USERNAME'),
+    MAIL_PASSWORD = keys.get('MAIL_PASSWORD'),
+    MAIL_DEFAULT_SENDER = tuple(keys['MAIL_SENDER'])
   )
   
   application.config.update(app_config)

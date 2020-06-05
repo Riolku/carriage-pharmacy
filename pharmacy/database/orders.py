@@ -39,6 +39,7 @@ class Orders(Helper, dbmodel):
     db_commit()
   
 class OrderProducts(Helper, dbmodel):
+  id = dbcol(dbint, primary_key = True)
   oid = dbcol(dbint, dbforkey(Orders.id), nullable = False)
   pid = dbcol(dbint, dbforkey(Products.id), nullable = False)
   notes = dbcol(dbstr(1024), nullable = False) # Notes for this product, submitted by the user
