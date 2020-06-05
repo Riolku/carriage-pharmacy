@@ -2,6 +2,6 @@
 # Otherwise the routes will never be registered
 
 # import the utils since some of the functions need to be run
-import pharmacy.server.routes.utils
+# import pharmacy.server.routes.utils
 
-from core import *
+from pharmacy.server.routes.core import *

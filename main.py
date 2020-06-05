@@ -11,4 +11,4 @@ if __name__ == "__main__":
     if argv[i].startswith("--port="):
       port = int(argv[i][len("--port="):])
   
-  app.run(host = "0.0.0.0", port = port)
+  app.run(host = "0.0.0.0", port = port, debug = "debug" in argv)
