@@ -1,6 +1,7 @@
 import os
 
 from .utils.files import load_json
+from werkzeug.middleware.proxy_fix import ProxyFix 
 
 def configure_app(application):
   keys = load_json(os.environ['PHARMACY_KEYS_FILE'])
@@ -29,5 +30,7 @@ def configure_app(application):
   )
   
   application.config.update(app_config)
+  
+  application.wsgi_app = ProxyFix(application.wsgi_app, x_for = 1, x_proto = 1, x_port = 1, x_host = 1)
     
   return application
