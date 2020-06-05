@@ -1,5 +1,5 @@
 <div id="topcontainer">
-  <div id="navbar" class="{{ 'sticky' if __navbar_stuck or 1 else '' }}">
+  <div id="navbar" class="{{ 'sticky' if __navbar_stuck else '' }}">
     <a href="/" style="margin:0;padding:0;"><img src="/static/images/logo.png" style="margin:0;padding:0" height=59px /></a>
     
     {%- for url, name in __navbar_elements -%}
