@@ -33,6 +33,10 @@ header.announcement {
   padding-top: 0.5em;
 }
 
+#top-spacing-container {
+  height: 10vh;
+}
+
 #container {
   padding: 10px 25px;
   background-color: #eee;
