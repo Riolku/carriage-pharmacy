@@ -12,4 +12,4 @@ app = configure_app(app)
 
 db = SQLAlchemy(app)
 
-mail = Mail(app)
+mail_app = Mail(app)
