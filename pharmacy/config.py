@@ -1,5 +1,7 @@
 import os
 
+from sys import argv
+
 from .utils.files import load_json
 from werkzeug.middleware.proxy_fix import ProxyFix 
 
@@ -26,8 +28,13 @@ def configure_app(application):
     MAIL_PORT = keys['MAIL_PORT'],
     MAIL_USERNAME = keys.get('MAIL_USERNAME'),
     MAIL_PASSWORD = keys.get('MAIL_PASSWORD'),
-    MAIL_DEFAULT_SENDER = tuple(keys['MAIL_SENDER'])
+    MAIL_DEFAULT_SENDER = tuple(keys['MAIL_SENDER']),
+    
+    ALT_PORT = len(argv) > 1 and argv[1] == 'alt'
   )
+  
+  if app_config['ALT_PORT']:
+    app_config['SERVER_NAME'] = "pharmacy2.kgugeler.ca"
   
   application.config.update(app_config)
   

@@ -5,7 +5,6 @@ from .helper import Helper
 from .users import Users
 from .order_types import OrderTypes
 from .products import Products
-from pharmacy.auth.manage_user import user
 from .utils import db_commit
 
 class Orders(Helper, dbmodel):
@@ -31,6 +30,7 @@ class Orders(Helper, dbmodel):
     return OrderTypes.query.filter_by(id = self.otid).first()
 
   def create(otid, time, products, notes, payment, uid = None): # Get uid from user.id
+    from pharmacy.auth.manage_user import user
     if uid is None: uid = user.uid
       
     if time % 1800 != 0: return False

@@ -10,7 +10,7 @@ from pharmacy.server.routes.utils import *
 from pharmacy.utils.time import get_time
 
 def render(*a, **k):
-  return render_template(*a, **k, __navbar_elements = [("/order", "Order"), ("/about", "About")], user = user)
+  return render_template(*a, **k, __navbar_elements = [("/about", "About"), ("/faq", "FAQ"), ("/browse", "Browse Products"), ("/checkout", "Checkout"), ("/order", "Order")], user = user)
 
 @app.route("/")
 def serve_root():
@@ -18,11 +18,11 @@ def serve_root():
   
 @app.route("/about")
 def serve_about():
-  abort(404)
+  return render("about.html")
   
 @app.route("/faq")
 def serve_faq():
-  abort(404)
+  return render("faq.html")
   
 @app.route("/browse")
 def serve_browse():
@@ -119,7 +119,7 @@ def serve_view_orders():
   if not user.admin:
     abort(403)
     
-  os = Orders.query.filter_by(get_time() <= Orders.time <= get_time() + 48 * 60 * 60).all()
+  os = Orders.query.filter_by(get_time() - 2 * 60 <= Orders.time <= get_time() + 48 * 60 * 60).all()
   
   return render("view_orders.html", orders = os)
     
@@ -242,4 +242,4 @@ def serve_403(e):
 
 @app.route("/favicon.ico")
 def serve_favicon():
-  return redirect("/static/ico/favicon.ico")
+  return redirect("/static/ico/favicon.ico", code = 303)
