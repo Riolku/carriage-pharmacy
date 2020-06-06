@@ -41,8 +41,9 @@ def serve_product(id):
     if not user: return redirect("/signin?next=/product/%d" % id, code = 303)
 
     notes = request.form['notes']
+    quantity = request.form['quantity']
     
-    add_to_cart(id, notes)
+    add_to_cart(id, notes, quantity)
     
     flash("Item added to cart!")
     

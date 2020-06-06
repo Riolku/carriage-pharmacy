@@ -39,7 +39,7 @@ class Orders(Helper, dbmodel):
     order = Orders.add(uid = uid, otid = otid, notes = notes, time = time, payment = payment)
     
     for p in product_ids:
-      OrderProducts.add(oid = order.id, pid = p['id'], notes = p['notes'], _commit = False)
+      OrderProducts.add(oid = order.id, pid = p['id'], notes = p['notes'], qty = p['qty'], _commit = False)
       
     db_commit()
     
@@ -51,4 +51,5 @@ class OrderProducts(Helper, dbmodel):
   id = dbcol(dbint, primary_key = True)
   oid = dbcol(dbint, dbforkey(Orders.id), nullable = False)
   pid = dbcol(dbint, dbforkey(Products.id), nullable = False)
+  qty = dbcol(dbint, nullable = False)
   notes = dbcol(dbstr(1024), nullable = False) # Notes for this product, submitted by the user
