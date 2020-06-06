@@ -39,7 +39,7 @@ class Orders(Helper, dbmodel):
     order = Orders.add(uid = uid, otid = otid, notes = notes, time = time, payment = payment)
     
     for p, v in product_ids.items():
-      OrderProducts.add(oid = order.id, pid = p, notes = v['notes'], qty = v['qty'], _commit = False)
+      OrderProducts.add(oid = order.id, pid = p, notes = v[0], qty = v[1], _commit = False)
       
     db_commit()
     
