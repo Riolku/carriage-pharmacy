@@ -38,8 +38,8 @@ class Orders(Helper, dbmodel):
     
     order = Orders.add(uid = uid, otid = otid, notes = notes, time = time, payment = payment)
     
-    for p in product_ids:
-      OrderProducts.add(oid = order.id, pid = p['id'], notes = p['notes'], qty = p['qty'], _commit = False)
+    for p, v in product_ids.items():
+      OrderProducts.add(oid = order.id, pid = p, notes = v['notes'], qty = v['qty'], _commit = False)
       
     db_commit()
     
