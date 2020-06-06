@@ -1,6 +1,6 @@
 import json, re
 
-from flask import redirect, render_template, request, flasha, abort, jsonify
+from flask import redirect, render_template, request, flash, abort, jsonify
 
 from datetime import datetime
 
@@ -28,7 +28,7 @@ def serve_faq():
 def serve_browse():
   return render("browse.html", products = Products.query.all(), product_types = ProductTypes.query.all())
   
-@app.route("/product/<id:int>")
+@app.route("/product/<int:id>")
 def serve_product(id):
   p = Products.query.filter_by(id = id).first()
   
@@ -48,7 +48,7 @@ def serve_product(id):
     
     return redirect("/browse", code = 303)
     
-@app.route("/api/available-times/<y>/<m>/<d>", methods = "GET")
+@app.route("/api/available-times/<y>/<m>/<d>")
 def serve_available_times(y, m, d):
   start = 9
   end = 20
@@ -96,7 +96,7 @@ def serve_checkout():
     
     return redirect("/", code = 303)
     
-@app.route("/view-order/<id:int>")
+@app.route("/view-order/<int:id>")
 def serve_view_order(id):
   if not user:
     return redirect("/signin?next=/view-order/%d" % id, code = 303)
@@ -233,9 +233,13 @@ def serve_signup():
     
     
 @app.errorhandler(404)
-def serve_404():
+def serve_404(e):
   return "404"
 
 @app.errorhandler(403)
-def serve_403():
+def serve_403(e):
   return "403"
+
+@app.route("/favicon.ico")
+def serve_favicon():
+  return redirect("/static/ico/favicon.ico")
