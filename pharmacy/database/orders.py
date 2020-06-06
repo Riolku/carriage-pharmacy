@@ -14,6 +14,7 @@ class Orders(Helper, dbmodel):
   id = dbcol(dbint, primary_key = True)
   uid = dbcol(dbint, dbforkey(Users.id), nullable = False)
   otid = dbcol(dbint, dbforkey(OrderTypes.id), nullable = False)
+#  notes = dbcol(dbstr(1024), nullable = False)
   time = dbcol(dbint, nullable = False, unique = True)
   payment = dbcol(dbstr, nullable = False)
   
