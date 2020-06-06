@@ -42,7 +42,7 @@ class Users(dbmodel, Helper):
     
     if u is None: return None
     
-    if u.pass_hash != u.check_pass(password):
+    if not u.check_pass(password):
       return False
     
     return u

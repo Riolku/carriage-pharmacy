@@ -8,7 +8,7 @@
     {%- endfor -%}
 
     {%- if user -%}
-      <a class="right">Welcome, {{ user.name }}</a>
+      <a class="right" href="/edit-profile">Welcome, {{ user.name }}</a>
       <a href="/logout{%- if request.endpoint -%}{{ '?next=' + (url_for(request.endpoint) | e) }}{%- endif -%}" class="right">Log Out</a>
     {%- else -%}
       <a href="/signup{%- if request.endpoint -%}{{ '?next=' + (url_for(request.endpoint) | e) }}{%- endif -%}" class="{{ 'selected' if request.endpoint and url_for(request.endpoint) == '/signup' else '' }} right">Sign Up</a>
