@@ -33,8 +33,8 @@ class Users(dbmodel, Helper):
     return argon2.argon2_hash(pword, self.salt)
     
   # Check that the password provided is the same as the stored one
-  def check_pass(self, newpass):
-    return hash(pword) == pass_hash
+  def check_pass(self, pword):
+    return self.hash(pword) == self.pass_hash
   
   # Try to login a user and return them, otherwise Falsy
   def login(email, password):

@@ -1,4 +1,5 @@
 <div id="topcontainer">
+  <center style="background-color:#333;color:#eee;font-size:120%;padding-top:0.4em;padding-bottom:0.4em">Learn more about COVID-19 and how you can keep yourself and others safe <a href="https://www.cdc.gov/coronavirus/2019-ncov/">here</a>.</center>
   <div id="navbar" class="{{ 'sticky' if __navbar_stuck else '' }}">
     <a href="/" style="margin:0;padding:0;"><img src="/static/images/logo.png" style="margin:0;padding:0" height=59px /></a>
     
@@ -7,7 +8,7 @@
     {%- endfor -%}
 
     {%- if user -%}
-      <a href="/edit-profile" class="{{ 'selected' if request.endpoint and url_for(request.endpoint) == '/edit-profile' else '' }} right">{{ user.username }}</a>
+      <a class="right">Welcome, {{ user.name }}</a>
       <a href="/logout{%- if request.endpoint -%}{{ '?next=' + (url_for(request.endpoint) | e) }}{%- endif -%}" class="right">Log Out</a>
     {%- else -%}
       <a href="/signup{%- if request.endpoint -%}{{ '?next=' + (url_for(request.endpoint) | e) }}{%- endif -%}" class="{{ 'selected' if request.endpoint and url_for(request.endpoint) == '/signup' else '' }} right">Sign Up</a>
