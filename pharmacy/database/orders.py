@@ -5,7 +5,6 @@ from .helper import Helper
 from .users import Users
 from .order_types import OrderTypes
 from .products import Products
-from pharmacy.auth.manage_user import user
 from .utils import db_commit
 
 class Orders(Helper, dbmodel):
@@ -31,6 +30,7 @@ class Orders(Helper, dbmodel):
     return OrderTypes.query.filter_by(id = self.otid).first()
 
   def create(otid, time, products, notes, payment, uid = None): # Get uid from user.id
+    from pharmacy.auth.manage_user import user
     if uid is None: uid = user.uid
       
     if time % 1800 != 0: return False
@@ -39,7 +39,7 @@ class Orders(Helper, dbmodel):
     order = Orders.add(uid = uid, otid = otid, notes = notes, time = time, payment = payment)
     
     for p in product_ids:
-      OrderProducts.add(oid = order.id, pid = p['id'], notes = p['notes'], _commit = False)
+      OrderProducts.add(oid = order.id, pid = p['id'], notes = p['notes'], qty = p['qty'], _commit = False)
       
     db_commit()
     
@@ -51,4 +51,5 @@ class OrderProducts(Helper, dbmodel):
   id = dbcol(dbint, primary_key = True)
   oid = dbcol(dbint, dbforkey(Orders.id), nullable = False)
   pid = dbcol(dbint, dbforkey(Products.id), nullable = False)
+  qty = dbcol(dbint, nullable = False)
   notes = dbcol(dbstr(1024), nullable = False) # Notes for this product, submitted by the user
