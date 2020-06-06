@@ -121,7 +121,7 @@ def serve_view_orders():
   if not user.admin:
     abort(403)
     
-  os = Orders.query.filter_by(get_time() - 2 * 60 <= Orders.time <= get_time() + 48 * 60 * 60).all()
+  os = Orders.query.filter_by(get_time() - 2 * 60 <= Orders.time, Orders.time <= get_time() + 48 * 60 * 60).all()
   
   return render("view_orders.html", orders = os)
     
