@@ -13,7 +13,7 @@ class Orders(Helper, dbmodel):
   id = dbcol(dbint, primary_key = True)
   uid = dbcol(dbint, dbforkey(Users.id), nullable = False)
   otid = dbcol(dbint, dbforkey(OrderTypes.id), nullable = False)
-  notes = dbcol(dbstr(1024), nullable = False)
+  notes = dbcol(dbstr(1024), nullable = False, default = "")
   time = dbcol(dbint, nullable = False, unique = True)
   payment = dbcol(dbstr, nullable = False)
   
@@ -31,15 +31,18 @@ class Orders(Helper, dbmodel):
 
   def create(otid, time, products, notes, payment, uid = None): # Get uid from user.id
     from pharmacy.auth.manage_user import user
-    if uid is None: uid = user.uid
+    if uid is None: uid = user.id
       
     if time % 1800 != 0: return False
     if Orders.query.filter_by(time = time).count() > 0: return False
+    print(notes)
     
     order = Orders.add(uid = uid, otid = otid, notes = notes, time = time, payment = payment)
     
-    for p, v in product_ids.items():
-      OrderProducts.add(oid = order.id, pid = p, notes = v[0], qty = v[1], _commit = False)
+    print(products)
+    
+    for p, q in products:
+      OrderProducts.add(oid = order.id, pid = p, qty = q, _flush = False)
       
     db_commit()
     
@@ -52,4 +55,3 @@ class OrderProducts(Helper, dbmodel):
   oid = dbcol(dbint, dbforkey(Orders.id), nullable = False)
   pid = dbcol(dbint, dbforkey(Products.id), nullable = False)
   qty = dbcol(dbint, nullable = False)
-  notes = dbcol(dbstr(1024), nullable = False) # Notes for this product, submitted by the user

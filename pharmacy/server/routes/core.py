@@ -25,6 +25,11 @@ def serve_about():
 def serve_faq():
   return render("faq.html")
   
+def parse_time(date, time):
+  y, m, d = map(int, date.split("-"))
+  h, n = map(int, time.split("."))
+  return datetime(y, m, d, h, n * 6).timestamp()
+  
 @app.route("/order", methods = ["GET", "POST"])
 def serve_order():
   if not user:
@@ -32,7 +37,14 @@ def serve_order():
   if request.method == "GET":
     return render("order.html", products = Products.query.all(), product_types = ProductTypes.query.all())
   else:
-    return json.dumps(request.form)
+    products = []
+    for product in Products.query.all():
+      qty = int(request.form.get("value-%d" % product.id, 0))
+      if qty:
+        products.append((product.id, qty))
+    Orders.create(int(request.form["location"]), parse_time(request.form["date"], request.form["time"]), products, request.form["notes"] or "", request.form["payment"])
+    flash("Your order has been placed successfully!", "success")
+    return redirect("/", code = 303)
   
 # @app.route("/browse")
 # def serve_browse():
@@ -83,7 +95,6 @@ def serve_available_times(y, m, d):
       if (dayt + i * 3600 + x * 1800) not in ts:
         av.append("%.1f" % (i + 0.5 * x))
 
-  if y == 2020 and m == 6 and d == 6: del av[1]
   return jsonify(av)
 
 # @app.route("/checkout", methods = ["GET", "POST"])
@@ -150,7 +161,7 @@ def serve_edit_profile():
     address = request.form['address'].strip() or None
     password = request.form['password'] or None
     rpassword = request.form['rpassword'] or None
-    postal = request.form['postal_code'].strip() or None
+    postal = request.form['postal'].strip() or None
     
     fail = False
     
@@ -172,7 +183,7 @@ def serve_edit_profile():
       flash("Your changes were not saved!")
       
     
-    return render(_name = name, _address = address, _postal = postal)
+    return render("edit_profile.html", _name = name, _address = address, _postal = postal)
     
   return render("edit_profile.html")
     

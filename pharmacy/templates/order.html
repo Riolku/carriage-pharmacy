@@ -27,9 +27,12 @@
     <br />
     * Services are only available on-site, and have a maximum value of 1
     <br /><br />
-    <input type="radio" id="site" name="location" value="site" required />&nbsp;<label for="site">On-Site</label><br />
-    <input type="radio" id="curb" name="location" value="curb" required />&nbsp;<label for="curb">Curb-side pickup</label><br />
-    <input type="radio" id="drop" name="location" value="drop" required />&nbsp;<label for="drop">Drop-off at address</label><br />
+    <input type="radio" id="site" name="location" value="1" required />&nbsp;<label for="site">On-Site</label><br />
+    <input type="radio" id="curb" name="location" value="2" required />&nbsp;<label for="curb">Curb-side pickup</label><br />
+    <input type="radio" id="drop" name="location" value="3" required />&nbsp;<label for="drop">Drop-off at address</label><br />
+    <br />
+    <input type="radio" id="card" name="payment" value="card" required />&nbsp;<label for="card">Credit/Debit</label><br />
+    <input type="radio" id="etransfer" name="payment" value="etransfer" required />&nbsp;<label for="etransfer">E-Transfer</label><br />
     <br />
     <input id="date" name="date" type="date" required style="height:40px" />
     <select id="time" name="time" required style="height:40px">
