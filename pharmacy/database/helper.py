@@ -6,6 +6,7 @@ class Helper:
   
   @classmethod
   def add(cls, _flush = True, **kwargs):
+    
     obj = cls(**kwargs)
     db.session.add(obj)
     
