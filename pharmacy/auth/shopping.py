@@ -18,6 +18,7 @@ def get_from_cart(pid):
 
 @assert_cart
 def set_cart(pid, note, quantity):
-  session['cart'][pid] = (note, quantity)
   if quantity == 0:
     del session['cart'][pid]
+  else:
+    session['cart'][pid] = (note, quantity)
