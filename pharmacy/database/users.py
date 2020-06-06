@@ -12,17 +12,21 @@ class Users(dbmodel, Helper):
   
   name = dbcol(dbstr(256), unique = False, nullable = False)
   email = dbcol(dbstr(256), unique = True, nullable = False)
+  address = dbcol(dbstr(1024), unique = False, nullable = False)
+  postal_code = dbcol(dbstr(64), unique = False, nullable = False)
+  
+  admin = dbcol(dbbool, nullable = False, default = False)
   
   salt = dbcol(dbbinary, nullable = False)
   pass_hash = dbcol(dbbinary, nullable = False)
   
-  # Create a new user with the specified name, email and password
-  def create(name, email, password):
+  # Create a new user with the specified name, email, password, address & postal_code
+  def create(name, email, password, address, postal_code):
     s = urandom(16)
     
     ph = argon2.argon2_hash(password, s)
     
-    Users.add(name = name, email = email, salt = s, pass_hash = ph)
+    Users.add(name = name, email = email, salt = s, pass_hash = ph, address = address, postal_code = postal_code)
     
   # Hash the password with the user's salt
   def hash(self, pword):
@@ -44,7 +48,7 @@ class Users(dbmodel, Helper):
     return u
   
   # Update a user object
-  def update(self, email = None, name = None, password = None):
+  def update(self, email = None, name = None, password = None, address = None, postal_code = None):
     if email is not None:
       self.email = email
       
@@ -53,5 +57,11 @@ class Users(dbmodel, Helper):
       
     if password is not None:
       self.pass_hash = self.hash(password)
+      
+    if address is not None:
+      self.address = address
+      
+    if postal_code is not None:
+      self.postal_code = postal_code
   
   __tablename__ = "users"
