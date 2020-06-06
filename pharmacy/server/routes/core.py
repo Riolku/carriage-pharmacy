@@ -1,10 +1,13 @@
 import json, re
 
-from flask import redirect, render_template, request, flash
+from flask import redirect, render_template, request, flasha, abort, jsonify
 
-from pharmacy.auth import login_user, logout_user, user
-from pharmacy.database import Users, Products, ProductTypes
+from datetime import datetime
+
+from pharmacy.auth import login_user, logout_user, user, add_to_cart, remove_from_cart, get_cart
+from pharmacy.database import Users, Products, ProductTypes, Orders
 from pharmacy.server.routes.utils import *
+from pharmacy.utils.time import get_time
 
 def render(*a, **k):
   return render_template(*a, **k, __navbar_elements = [("/order", "Order"), ("/about", "About")], user = user)
@@ -12,16 +15,151 @@ def render(*a, **k):
 @app.route("/")
 def serve_root():
   return render("index.html")
-
-@app.route("/order", methods = ["GET", "POST"])
-def serve_order():
-  if not user:
-    return redirect("/signin?next=/order", code = 303)
+  
+@app.route("/about")
+def serve_about():
+  abort(404)
+  
+@app.route("/faq")
+def serve_faq():
+  abort(404)
+  
+@app.route("/browse")
+def serve_browse():
+  return render("browse.html", products = Products.query.all(), product_types = ProductTypes.query.all())
+  
+@app.route("/product/<id:int>")
+def serve_product(id):
+  p = Products.query.filter_by(id = id).first()
+  
+  if not p: abort(404)
+  
   if request.method == "GET":
-    return render("order.html", products = Products.query.all(), product_types = ProductTypes.query.all())
+    return render("product.html", product = p)
+    
   else:
-    return json.dumps(request.form)
+    if not user: return redirect("/signin?next=/product/%d" % id, code = 303)
 
+    notes = request.form['notes']
+    
+    add_to_cart(id, notes)
+    
+    flash("Item added to cart!")
+    
+    return redirect("/browse", code = 303)
+    
+@app.route("/api/available-times/<y>/<m>/<d>", methods = "GET")
+def serve_available_times(y, m, d):
+  start = 9
+  end = 20
+  
+  t1 = datetime(y, m, d, start, 0).timestamp()
+  t2 = datetime(y, m, d, end, 0).timestamp()
+  
+  ts = {e.time for e in Orders.query.filter(t1 <= Orders.time <= t2).all()}
+  
+  dayt = datetime(y, m, d, 0, 0).timestamp()
+  
+  av = []
+  
+  for i in range(start, end):
+    for x in range(2):
+      if (dayt + i * 3600 + x * 1800) not in ts:
+        av.append("%.1f" % (i + 0.5 * x))
+
+  return jsonify(av)
+
+@app.route("/checkout", methods = ["GET", "POST"])
+def serve_checkout():
+  if not user:
+    return redirect("/signin?next=/checkout", code = 303)
+    
+  if request.method == "GET":
+    return render("checkout.html", cart = get_cart(), product_types = ProductTypes.query.all(), order_types = OrderTypes.query.all())
+    
+  else:
+    notes = request.form['notes']
+    cart = get_cart()
+    otid = request.form['order_type']
+    date = request.form['date']
+    payment = request.form['payment']
+    
+    year, month, day = map(int, date.split("/"))
+    form_time = request.form['time']
+    dt = datetime(year, month, day, int(form_time), time.endswith("5") * 30)
+    ts = int(dt.timestamp())
+    
+    if not Orders.create(int(otid), ts, cart, notes, payment):
+      flash("This time has been taken! Please try again!", "error")
+    
+    flash("Your order has been created. Thank you!", "success")
+    
+    return redirect("/", code = 303)
+    
+@app.route("/view-order/<id:int>")
+def serve_view_order(id):
+  if not user:
+    return redirect("/signin?next=/view-order/%d" % id, code = 303)
+    
+  if not user.admin:
+    abort(403)
+    
+  o = Orders.query.filter_by(id = id).first()
+  
+  if not o: abort(404)
+    
+  return render("view_order.html", order = o)
+  
+
+@app.route("/view-orders")
+def serve_view_orders():
+  if not user:
+    return redirect("/signin?next=/view-order/%d" % id, code = 303)
+    
+  if not user.admin:
+    abort(403)
+    
+  os = Orders.query.filter_by(get_time() <= Orders.time <= get_time() + 48 * 60 * 60).all()
+  
+  return render("view_orders.html", orders = os)
+    
+@app.route("/edit-profile", methods = ['GET', 'POST'])
+def serve_edit_profile():
+  if not user:
+    return redirect("/signin?next=/edit-profile")
+    
+  if request.method == "POST":
+    name = request.form['name'].strip() or None
+    address = request.form['address'].strip() or None
+    password = request.form['password'] or None
+    rpassword = request.form['rpassword'] or None
+    postal = request.form['postal_code'].strip() or None
+    
+    fail = False
+    
+    if password != rpassword:
+      flash("Passwords do not match!")
+      
+      fail = True
+      
+    if not re.match(r"(^[A-Za-z][0-9][A-Za-z]\s*[0-9][A-Za-z][0-9]$)", postal):
+      flash("Please enter a valid postal code!", "error")
+      fail = True
+    
+    if not fail:
+      user.update(name = name, password = password, address = address, postal_code = postal)
+  
+      flash("Your changes were saved!", "success")
+      
+    else:
+      flash("Your changes were not saved!")
+      
+    
+    return render(_name = name, _address = address, _postal = postal)
+    
+  return render("edit_profile.html")
+    
+    
 @app.route("/logout")
 def serve_logout():
   logout_user()
@@ -35,15 +173,17 @@ def serve_signin():
     email = request.form["email"].strip()
     password = request.form["password"]
     
-    u = Users.query.filter_by(email = email).first()
+    u = Users.login(email, password)
     
-    if not u or not u.check_pass(password):
+    if not u:
       flash("Invalid Credentials!", "error")
       return render_template("signin.html", _email = email)
     
     login_user(u)
     
-    return redirect(request.args.get("next", "/"), code = 33)
+    flash("Welcome back!", "success")
+    
+    return redirect(request.args.get("next", "/"), code = 303)
 
 @app.route("/signup", methods = ["GET", "POST"])
 def serve_signup():
@@ -87,4 +227,15 @@ def serve_signup():
     
     login_user(Users.query.filter_by(email = email).first())
     
+    flash("Welcome!", "success")
+    
     return redirect(request.args.get("next", "/"), code = 303)
+    
+    
+@app.errorhandler(404)
+def serve_404():
+  return "404"
+
+@app.errorhandler(403):
+def serve_403():
+  return "403"

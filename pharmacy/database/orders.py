@@ -15,6 +15,7 @@ class Orders(Helper, dbmodel):
   uid = dbcol(dbint, dbforkey(Users.id), nullable = False)
   otid = dbcol(dbint, dbforkey(OrderTypes.id), nullable = False)
   time = dbcol(dbint, nullable = False, unique = True)
+  payment = dbcol(dbstr, nullable = False)
   
   @property
   def products(self):
@@ -28,17 +29,20 @@ class Orders(Helper, dbmodel):
   def order_type(self):
     return OrderTypes.query.filter_by(id = self.otid).first()
 
-  def create(otid, time, products, uid = None): # Get uid from user.id
+  def create(otid, time, products, notes, payment, uid = None): # Get uid from user.id
     if uid is None: uid = user.uid
       
-    if time % 1800 != 0: return
+    if time % 1800 != 0: return False
+    if Orders.query.filter_by(time = time).count() > 0: return False
     
-    order = Orders.add(uid = uid, otid = otid)
+    order = Orders.add(uid = uid, otid = otid, notes = notes, time = time, payment = payment)
     
     for p in product_ids:
       OrderProducts.add(oid = order.id, pid = p['id'], notes = p['notes'], _commit = False)
       
     db_commit()
+    
+    return True
   
 class OrderProducts(Helper, dbmodel):
   __tablename__ = "order_products"

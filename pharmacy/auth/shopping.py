@@ -7,6 +7,10 @@ def assert_cart(func):
     return func(*args, **kwargs)
     
   return inner
+  
+@assert_cart
+def get_cart():
+  return session['cart']
 
 @assert_cart
 def add_to_cart(pid, note):
