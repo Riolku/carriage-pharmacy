@@ -32,7 +32,7 @@ def resolve_user():
   if u is None: return
 
   if u:
-    if user['time'] + 60 * 60 * 24 < get_time():
+    if user['time'] + 60 * 60 * 24 > get_time():
       user_manager.user = u
 
 

@@ -1,5 +1,6 @@
 from pharmacy import app
 
+from pharmacy.database import *
 from pharmacy.server.routes import *
 
 from sys import argv
