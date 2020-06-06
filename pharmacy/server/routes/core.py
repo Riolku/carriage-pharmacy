@@ -1,16 +1,16 @@
 import json, re
 
-from flask import redirect, render_template, request, flash, abort, jsonify
+from flask import redirect, render_template, request, flash, abort, jsonify, session
 
 from datetime import datetime
 
 from pharmacy.auth import login_user, logout_user, user, get_cart, get_from_cart, set_cart
-from pharmacy.database import Users, Products, ProductTypes, Orders
+from pharmacy.database import Users, Products, ProductTypes, Orders, OrderTypes
 from pharmacy.server.routes.utils import *
 from pharmacy.utils.time import get_time
 
 def render(*a, **k):
-  return render_template(*a, **k, __navbar_elements = [("/about", "About"), ("/faq", "FAQ"), ("/browse", "Browse Products"), ("/checkout", "Checkout")], user = user)
+  return render_template(*a, **k, __navbar_elements = [("/about", "About"), ("/faq", "FAQ"), ("/order", "Order")], user = user)
 
 @app.route("/")
 def serve_root():
@@ -24,41 +24,66 @@ def serve_about():
 def serve_faq():
   return render("faq.html")
   
-@app.route("/browse")
-def serve_browse():
-  return render("browse.html", products = Products.query.all(), product_types = ProductTypes.query.all())
+def parse_time(date, time):
+  y, m, d = map(int, date.split("-"))
+  h, n = map(int, time.split("."))
+  return datetime(y, m, d, h, n * 6).timestamp()
   
-@app.route("/product/<int:id>")
-def serve_product(id):
-  p = Products.query.filter_by(id = id).first()
-  
-  if not p: abort(404)
-  
+@app.route("/order", methods = ["GET", "POST"])
+def serve_order():
+  if not user:
+    return redirect("/signin?next=/order", code = 303)
   if request.method == "GET":
-    current = get_from_cart(id)
-    return render("product.html", product = p, note = current[0], qty = current[1])
-    
+    return render("order.html", products = Products.query.all(), product_types = ProductTypes.query.all())
   else:
-    if not user: return redirect("/signin?next=/product/%d" % id, code = 303)
+    products = []
+    for product in Products.query.all():
+      qty = int(request.form.get("value-%d" % product.id, 0))
+      if qty:
+        products.append((product.id, qty))
+    Orders.create(int(request.form["location"]), parse_time(request.form["date"], request.form["time"]), products, request.form["notes"] or "", request.form["payment"])
+    flash("Your order has been placed successfully!", "success")
+    return redirect("/", code = 303)
+  
+# @app.route("/browse")
+# def serve_browse():
+#   return render("browse.html", products = Products.query.all(), product_types = ProductTypes.query.all())
+  
+# @app.route("/product/<int:pid>", methods = ["GET", "POST"])
+# def serve_product(pid):
+#   p = Products.query.filter_by(id = pid).first()
+  
+#   if not p: abort(404)
+  
+#   if request.method == "GET":
+#     print(session)
+#     current = get_from_cart(pid)
+#     print(current)
+#     return render("product.html", product = p, note = current[0], qty = current[1])
+    
+#   else:
+#     if not user: return redirect("/signin?next=/product/%d" % pid, code = 303)
 
-    notes = request.form['notes']
-    quantity = request.form['quantity']
+#     notes = request.form['notes']
+#     quantity = int(request.form['qty'])
     
-    set_cart(id, notes, quantity)
+#     set_cart(pid, notes, quantity)
     
-    flash("Item added to cart!")
+# #     flash("Item added to cart!", "success")
+
+#     print(session)
     
-    return redirect("/browse", code = 303)
+#     return redirect("/browse", code = 303)
     
-@app.route("/api/available-times/<y>/<m>/<d>")
+@app.route("/api/available-times/<int:y>/<int:m>/<int:d>")
 def serve_available_times(y, m, d):
   start = 9
-  end = 20
+  end = [18, 20, 18, 20, 18, 15, 9][datetime(y, m, d).weekday()]
   
   t1 = datetime(y, m, d, start, 0).timestamp()
   t2 = datetime(y, m, d, end, 0).timestamp()
   
-  ts = {e.time for e in Orders.query.filter(t1 <= Orders.time <= t2).all()}
+  ts = {e.time for e in Orders.query.filter(t1 <= Orders.time, Orders.time <= t2).all()}
   
   dayt = datetime(y, m, d, 0, 0).timestamp()
   
@@ -71,32 +96,32 @@ def serve_available_times(y, m, d):
 
   return jsonify(av)
 
-@app.route("/checkout", methods = ["GET", "POST"])
-def serve_checkout():
-  if not user:
-    return redirect("/signin?next=/checkout", code = 303)
+# @app.route("/checkout", methods = ["GET", "POST"])
+# def serve_checkout():
+#   if not user:
+#     return redirect("/signin?next=/checkout", code = 303)
     
-  if request.method == "GET":
-    return render("checkout.html", cart = get_cart(), product_types = ProductTypes.query.all(), order_types = OrderTypes.query.all())
+#   if request.method == "GET":
+#     return render("checkout.html", cart = get_cart(), product_types = ProductTypes.query.all(), order_types = OrderTypes.query.all())
     
-  else:
-    notes = request.form['notes']
-    cart = get_cart()
-    otid = request.form['order_type']
-    date = request.form['date']
-    payment = request.form['payment']
+#   else:
+#     notes = request.form['notes']
+#     cart = get_cart()
+#     otid = request.form['order_type']
+#     date = request.form['date']
+#     payment = request.form['payment']
     
-    year, month, day = map(int, date.split("/"))
-    form_time = request.form['time']
-    dt = datetime(year, month, day, int(form_time), time.endswith("5") * 30)
-    ts = int(dt.timestamp())
+#     year, month, day = map(int, date.split("/"))
+#     form_time = request.form['time']
+#     dt = datetime(year, month, day, int(form_time), time.endswith("5") * 30)
+#     ts = int(dt.timestamp())
     
-    if not Orders.create(int(otid), ts, cart, notes, payment):
-      flash("This time has been taken! Please try again!", "error")
+#     if not Orders.create(int(otid), ts, cart, notes, payment):
+#       flash("This time has been taken! Please try again!", "error")
     
-    flash("Your order has been created. Thank you!", "success")
+#     flash("Your order has been created. Thank you!", "success")
     
-    return redirect("/", code = 303)
+#     return redirect("/", code = 303)
     
 @app.route("/view-order/<int:id>")
 def serve_view_order(id):
@@ -135,7 +160,7 @@ def serve_edit_profile():
     address = request.form['address'].strip() or None
     password = request.form['password'] or None
     rpassword = request.form['rpassword'] or None
-    postal = request.form['postal_code'].strip() or None
+    postal = request.form['postal'].strip() or None
     
     fail = False
     
@@ -157,7 +182,7 @@ def serve_edit_profile():
       flash("Your changes were not saved!")
       
     
-    return render(_name = name, _address = address, _postal = postal)
+    return render("edit_profile.html", _name = name, _address = address, _postal = postal)
     
   return render("edit_profile.html")
     

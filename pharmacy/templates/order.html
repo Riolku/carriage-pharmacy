@@ -25,19 +25,21 @@
       {%- endfor -%}
     </table>
     <br />
-    * Services are only available on-site
+    * Services are only available on-site, and have a maximum value of 1
     <br /><br />
-    <input type="radio" id="site" name="location" value="site" required />&nbsp;<label for="site">On-Site</label><br />
-    <input type="radio" id="curb" name="location" value="curb" required />&nbsp;<label for="curb">Curb-side pickup</label><br />
-    <input type="radio" id="drop" name="location" value="drop" required />&nbsp;<label for="drop">Drop-off at address</label><br />
+    <input type="radio" id="site" name="location" value="1" required />&nbsp;<label for="site">On-Site</label><br />
+    <input type="radio" id="curb" name="location" value="2" required />&nbsp;<label for="curb">Curb-side pickup</label><br />
+    <input type="radio" id="drop" name="location" value="3" required />&nbsp;<label for="drop">Drop-off at address</label><br />
+    <br />
+    <input type="radio" id="card" name="payment" value="card" required />&nbsp;<label for="card">Credit/Debit</label><br />
+    <input type="radio" id="etransfer" name="payment" value="etransfer" required />&nbsp;<label for="etransfer">E-Transfer</label><br />
     <br />
     <input id="date" name="date" type="date" required style="height:40px" />
     <select id="time" name="time" required style="height:40px">
-      <option value="" selected hidden disabled>Time</option>
-      <option id="deadtime" value="" hidden disabled>Closed</option>
+      <option id="time-blank" value="" selected hidden disabled>Time</option>
       {%- for x in range(9, 20) -%}
-        <option id="hour-{{ x }}" value="{{ x }}">{{ x }}:00</option>
-        <option id="half-{{ x }}" value="{{ x }}.5">{{ x }}:30</option>
+        <option id="time-{{ x }}.0" value="{{ x }}.0">{{ x }}:00</option>
+        <option id="time-{{ x }}.5" value="{{ x }}.5">{{ x }}:30</option>
       {%- endfor -%}
     </select>
     <br /><br />
