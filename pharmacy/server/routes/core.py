@@ -5,7 +5,7 @@ from flask import redirect, render_template, request, flash, abort, jsonify, ses
 from datetime import datetime
 
 from pharmacy.auth import login_user, logout_user, user, get_cart, get_from_cart, set_cart
-from pharmacy.database import Users, Products, ProductTypes, Orders, OrderTypes
+from pharmacy.database import Users, Products, ProductTypes, Orders, OrderTypes, OrderProducts
 from pharmacy.server.routes.utils import *
 from pharmacy.utils.time import get_time
 
@@ -133,22 +133,24 @@ def serve_view_order(id):
     
   o = Orders.query.filter_by(id = id).first()
   
+  p = [(k, Products.query.filter_by(id = k.pid).first()) for k in OrderProducts.query.filter_by(oid = id).all()]
+  
   if not o: abort(404)
     
-  return render("view_order.html", order = o)
+  return render("view_order.html", order = o, products = p, ft = lambda ts: datetime.fromtimestamp(ts).strftime("%B %d, %Y at %H:%M"), name = lambda u: Users.query.filter_by(id = u).first().name)
   
 
 @app.route("/view-orders")
 def serve_view_orders():
   if not user:
-    return redirect("/signin?next=/view-order/%d" % id, code = 303)
+    return redirect("/signin?next=/view-orders", code = 303)
     
   if not user.admin:
     abort(403)
     
   os = Orders.query.filter(get_time() - 2 * 60 <= Orders.time, Orders.time <= get_time() + 48 * 60 * 60).all()
   
-  return render("view_orders.html", orders = os)
+  return render("view_orders.html", orders = os, ft = lambda ts: datetime.fromtimestamp(ts).strftime("%B %d, %Y at %H:%M"), name = lambda u: Users.query.filter_by(id = u).first().name)
     
 @app.route("/edit-profile", methods = ['GET', 'POST'])
 def serve_edit_profile():

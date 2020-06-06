@@ -5,5 +5,7 @@
     Order List
   </h1>
   
-  {{ orders }}
+  {%- for order in orders -%}
+    <br /><a href="/view-order/{{ order.id }}">{{ ft(order.time) }} by {{ name(order.uid) }}</a><br />
+  {%- endfor -%}
 {%- endblock -%}
