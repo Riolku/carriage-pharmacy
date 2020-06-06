@@ -10,7 +10,7 @@ from pharmacy.server.routes.utils import *
 from pharmacy.utils.time import get_time
 
 def render(*a, **k):
-  return render_template(*a, **k, __navbar_elements = [("/order", "Order"), ("/about", "About")], user = user)
+  return render_template(*a, **k, __navbar_elements = [("/browse", "Browse"), ("/about", "About")], user = user)
 
 @app.route("/")
 def serve_root():

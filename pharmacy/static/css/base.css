@@ -432,3 +432,14 @@ button.outlined-button,
 .toggle-button:not(:first-child) {
   border-left: 1px solid #999;
 }
+
+.card-link, .card-link:hover {
+  text-decoration: none;
+  color: inherit;
+}
+
+.product-card {
+  border: 1px solid black;
+  border-radius: 5px;
+  padding: 10px;
+}
