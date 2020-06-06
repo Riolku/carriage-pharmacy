@@ -4,7 +4,7 @@ from flask import redirect, render_template, request, flash, abort, jsonify
 
 from datetime import datetime
 
-from pharmacy.auth import login_user, logout_user, user, add_to_cart, remove_from_cart, get_cart
+from pharmacy.auth import login_user, logout_user, user, get_cart, get_from_cart, set_cart
 from pharmacy.database import Users, Products, ProductTypes, Orders
 from pharmacy.server.routes.utils import *
 from pharmacy.utils.time import get_time
@@ -35,7 +35,8 @@ def serve_product(id):
   if not p: abort(404)
   
   if request.method == "GET":
-    return render("product.html", product = p)
+    current = get_from_cart(id)
+    return render("product.html", product = p, note = current[0], qty = current[1])
     
   else:
     if not user: return redirect("/signin?next=/product/%d" % id, code = 303)
@@ -43,7 +44,7 @@ def serve_product(id):
     notes = request.form['notes']
     quantity = request.form['quantity']
     
-    add_to_cart(id, notes, quantity)
+    set_cart(id, notes, quantity)
     
     flash("Item added to cart!")
     
