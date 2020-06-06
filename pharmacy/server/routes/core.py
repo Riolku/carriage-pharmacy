@@ -236,6 +236,6 @@ def serve_signup():
 def serve_404():
   return "404"
 
-@app.errorhandler(403):
+@app.errorhandler(403)
 def serve_403():
   return "403"
