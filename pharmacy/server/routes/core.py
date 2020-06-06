@@ -14,7 +14,6 @@ def render(*a, **k):
 
 @app.route("/")
 def serve_root():
-  print(request.path)
   return render("index.html")
   
 @app.route("/about")
